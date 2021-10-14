@@ -3,10 +3,10 @@ name: Checks
 on:
   push:
     branches:
-      - main
+      - toil/build-opa-envoy-plugin
   pull_request:
     branches:
-      - main
+      - toil/build-opa-envoy-plugin
 
 jobs:
   go-build:
@@ -44,7 +44,7 @@ jobs:
 
   deploy:
     name: Push Latest Release
-    if: github.ref == 'refs/heads/main' # only true for pushes to `main`
+    if: github.ref == 'refs/heads/toil/build-opa-envoy-plugin'
     runs-on: ubuntu-18.04
     steps:
       - name: Check out code
@@ -54,8 +54,8 @@ jobs:
 
       - name: Build and Push
         env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USER: "${{ secrets.DOCKER_USER }}"
+          DOCKER_PASSWORD: "${{ secrets.DOCKER_PASSWORD }}"
         # Only run if required secrets are provided
         if: ${{ env.DOCKER_USER && env.DOCKER_PASSWORD }}
         run: make deploy-ci
@@ -80,7 +80,7 @@ jobs:
           sudo apt-get install -y bats
 
           # Make docker image available to k8s
-          kind load docker-image openpolicyagent/opa:latest-istio
+          kind load docker-image omiteam/opa:latest-istio
 
       - name: Run e2e tests
         run: make test-e2e
