@@ -22,7 +22,7 @@ spec:
         value:
           name: envoy.ext_authz
           typed_config:
-            '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+            "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
             transport_api_version: V3
             status_on_error:
               code: ServiceUnavailable
@@ -187,7 +187,7 @@ data:
     }]
 
     opa_container = {
-      "image": "openpolicyagent/opa:latest-istio",
+      "image": "omiteam/opa:latest-istio",
       "name": "opa-istio",
       "args": [
         "run",
@@ -267,17 +267,17 @@ spec:
       name: admission-controller
     spec:
       containers:
-        - image: openpolicyagent/opa:latest
+        - image: omiteam/opa:latest
           name: opa
           ports:
-          - containerPort: 443
+            - containerPort: 443
           args:
-          - "run"
-          - "--server"
-          - "--tls-cert-file=/certs/tls.crt"
-          - "--tls-private-key-file=/certs/tls.key"
-          - "--addr=0.0.0.0:443"
-          - "/policies/inject.rego"
+            - "run"
+            - "--server"
+            - "--tls-cert-file=/certs/tls.crt"
+            - "--tls-private-key-file=/certs/tls.key"
+            - "--addr=0.0.0.0:443"
+            - "/policies/inject.rego"
           livenessProbe:
             httpGet:
               path: /health?plugins

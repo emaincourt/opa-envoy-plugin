@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: opa
-          image: openpolicyagent/opa:0.26.0-envoy
+          image: omiteam/opa:0.26.0-envoy
           volumeMounts:
             - readOnly: true
               mountPath: /policy
@@ -68,4 +68,3 @@ data:
     action_allowed {
       http_request.method == "GET"
     }
-

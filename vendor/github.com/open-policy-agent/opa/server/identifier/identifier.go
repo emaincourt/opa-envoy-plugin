@@ -28,7 +28,7 @@ func SetIdentity(r *http.Request, v string) *http.Request {
 
 type identityKey string
 
-const identity = identityKey("org.openpolicyagent/identity")
+const identity = identityKey("org.omiteam/identity")
 
 // TokenBased extracts Bearer tokens from the request.
 type TokenBased struct {

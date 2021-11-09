@@ -12,8 +12,8 @@ Use [OPA GitHub Issues](https://github.com/open-policy-agent/opa/issues) to requ
 
 The OPA-Envoy plugin can be deployed with Envoy-based service meshes such as:
 
-* [Istio](./examples/istio)
-* [Gloo Edge](./examples/gloo-edge)
+- [Istio](./examples/istio)
+- [Gloo Edge](./examples/gloo-edge)
 
 ## Overview
 
@@ -32,80 +32,80 @@ This section assumes you are testing with Envoy v1.10.0 or later.
 
 1. Start Minikube.
 
-    ```bash
-    minikube start
-    ```
+   ```bash
+   minikube start
+   ```
 
 1. Install OPA-Envoy.
 
-    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/opa-envoy-plugin/main/quick_start.yaml
-    ```
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/opa-envoy-plugin/main/quick_start.yaml
+   ```
 
-    The `quick_start.yaml` manifest defines the following resources:
+   The `quick_start.yaml` manifest defines the following resources:
 
-    * A ConfigMap containing an Envoy configuration with an External Authorization Filter to direct authorization checks to the OPA-Envoy sidecar.
-    See `kubectl get configmap proxy-config` for details.
+   - A ConfigMap containing an Envoy configuration with an External Authorization Filter to direct authorization checks to the OPA-Envoy sidecar.
+     See `kubectl get configmap proxy-config` for details.
 
-    * OPA configuration file, and an OPA policy into ConfigMaps in the namespace where the app will be deployed, e.g., `default`.
+   - OPA configuration file, and an OPA policy into ConfigMaps in the namespace where the app will be deployed, e.g., `default`.
 
-    * A Deployment consisting an example Go application with OPA-Envoy and Envoy sidecars. The sample app provides information
-    about employees in a company and exposes APIs to `get` and `create` employees. More information about the app
-    can be found [here](https://github.com/ashutosh-narkar/go-test-server). The deployment also includes an init container that
-    installs iptables rules to redirect all container traffic through the Envoy proxy sidecar. More information can be
-    found [here](https://github.com/open-policy-agent/contrib/tree/main/envoy_iptables).
+   - A Deployment consisting an example Go application with OPA-Envoy and Envoy sidecars. The sample app provides information
+     about employees in a company and exposes APIs to `get` and `create` employees. More information about the app
+     can be found [here](https://github.com/ashutosh-narkar/go-test-server). The deployment also includes an init container that
+     installs iptables rules to redirect all container traffic through the Envoy proxy sidecar. More information can be
+     found [here](https://github.com/open-policy-agent/contrib/tree/main/envoy_iptables).
 
 1. Make the application accessible outside the cluster.
 
-    ```bash
-    kubectl expose deployment example-app --type=NodePort --name=example-app-service --port=8080
-    ```
+   ```bash
+   kubectl expose deployment example-app --type=NodePort --name=example-app-service --port=8080
+   ```
 
 1. Set the `SERVICE_URL` environment variable to the service’s IP/port.
 
-    **minikube**:
+   **minikube**:
 
-    ```bash
-    export SERVICE_PORT=$(kubectl get service example-app-service -o jsonpath='{.spec.ports[?(@.port==8080)].nodePort}')
-    export SERVICE_HOST=$(minikube ip)
-    export SERVICE_URL=$SERVICE_HOST:$SERVICE_PORT
-    echo $SERVICE_URL
-    ```
+   ```bash
+   export SERVICE_PORT=$(kubectl get service example-app-service -o jsonpath='{.spec.ports[?(@.port==8080)].nodePort}')
+   export SERVICE_HOST=$(minikube ip)
+   export SERVICE_URL=$SERVICE_HOST:$SERVICE_PORT
+   echo $SERVICE_URL
+   ```
 
-    **minikube (example)**:
+   **minikube (example)**:
 
-    ```bash
-    192.168.99.100:31380
-    ```
+   ```bash
+   192.168.99.100:31380
+   ```
 
 1. Exercise the sample OPA policy.
 
-    For convenience, we’ll want to store Alice’s and Bob’s tokens in environment variables.
+   For convenience, we’ll want to store Alice’s and Bob’s tokens in environment variables.
 
-    ```bash
-    export ALICE_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiZ3Vlc3QiLCJzdWIiOiJZV3hwWTJVPSIsIm5iZiI6MTUxNDg1MTEzOSwiZXhwIjoxNjQxMDgxNTM5fQ.K5DnnbbIOspRbpCr2IKXE9cPVatGOCBrBQobQmBmaeU"
-    export BOB_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJzdWIiOiJZbTlpIiwibmJmIjoxNTE0ODUxMTM5LCJleHAiOjE2NDEwODE1Mzl9.WCxNAveAVAdRCmkpIObOTaSd0AJRECY2Ch2Qdic3kU8"
-    ```
+   ```bash
+   export ALICE_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiZ3Vlc3QiLCJzdWIiOiJZV3hwWTJVPSIsIm5iZiI6MTUxNDg1MTEzOSwiZXhwIjoxNjQxMDgxNTM5fQ.K5DnnbbIOspRbpCr2IKXE9cPVatGOCBrBQobQmBmaeU"
+   export BOB_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJzdWIiOiJZbTlpIiwibmJmIjoxNTE0ODUxMTM5LCJleHAiOjE2NDEwODE1Mzl9.WCxNAveAVAdRCmkpIObOTaSd0AJRECY2Ch2Qdic3kU8"
+   ```
 
-    Check that `Alice` can get employees **but cannot** create one.
+   Check that `Alice` can get employees **but cannot** create one.
 
-    ```bash
-    curl -i -H "Authorization: Bearer "$ALICE_TOKEN"" http://$SERVICE_URL/people
-    curl -i -H "Authorization: Bearer "$ALICE_TOKEN"" -d '{"firstname":"Charlie", "lastname":"OPA"}' -H "Content-Type: application/json" -X POST http://$SERVICE_URL/people
-    ```
+   ```bash
+   curl -i -H "Authorization: Bearer "$ALICE_TOKEN"" http://$SERVICE_URL/people
+   curl -i -H "Authorization: Bearer "$ALICE_TOKEN"" -d '{"firstname":"Charlie", "lastname":"OPA"}' -H "Content-Type: application/json" -X POST http://$SERVICE_URL/people
+   ```
 
    Check that `Bob` can get employees and also create one.
 
    ```bash
     curl -i -H "Authorization: Bearer "$BOB_TOKEN"" http://$SERVICE_URL/people
     curl -i -H "Authorization: Bearer "$BOB_TOKEN"" -d '{"firstname":"Charlie", "lastname":"Opa"}' -H "Content-Type: application/json" -X POST http://$SERVICE_URL/people
-    ```
+   ```
 
    Check that `Bob` **cannot** create an employee with the same firstname as himself.
 
    ```bash
     curl -i  -H "Authorization: Bearer "$BOB_TOKEN"" -d '{"firstname":"Bob", "lastname":"Rego"}' -H "Content-Type: application/json" -X POST http://$SERVICE_URL/people
-    ```
+   ```
 
 ## Configuration
 
@@ -113,35 +113,35 @@ To deploy OPA-Envoy include the following container in your Kubernetes Deploymen
 
 ```yaml
 containers:
-- image: openpolicyagent/opa:latest-envoy
-  imagePullPolicy: IfNotPresent
-  name: opa-envoy
-  volumeMounts:
-  - mountPath: /config
-    name: opa-envoy-config
-  args:
-  - run
-  - --server
-  - --addr=localhost:8181
-  - --diagnostic-addr=0.0.0.0:8282
-  - --config-file=/config/config.yaml
-  livenessProbe:
-    httpGet:
-      path: /health?plugins
-      port: 8282
-  readinessProbe:
-    httpGet:
-      path: /health?plugins
-      port: 8282
+  - image: omiteam/opa:latest-envoy
+    imagePullPolicy: IfNotPresent
+    name: opa-envoy
+    volumeMounts:
+      - mountPath: /config
+        name: opa-envoy-config
+    args:
+      - run
+      - --server
+      - --addr=localhost:8181
+      - --diagnostic-addr=0.0.0.0:8282
+      - --config-file=/config/config.yaml
+    livenessProbe:
+      httpGet:
+        path: /health?plugins
+        port: 8282
+    readinessProbe:
+      httpGet:
+        path: /health?plugins
+        port: 8282
 ```
 
 The OPA-Envoy configuration file should be volume mounted into the container. Add the following volume to your Kubernetes Deployments:
 
 ```yaml
 volumes:
-- name: opa-envoy-config
-  configMap:
-    name: opa-envoy-config
+  - name: opa-envoy-config
+    configMap:
+      name: opa-envoy-config
 ```
 
 ### Example Bundle Configuration

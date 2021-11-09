@@ -65,10 +65,10 @@ metadata:
 spec:
   virtualHost:
     domains:
-      - '*'
+      - "*"
     routes:
       - matchers:
-         - prefix: /
+          - prefix: /
         routeAction:
           single:
             upstream:
@@ -153,7 +153,7 @@ spec:
     spec:
       containers:
         - name: opa
-          image: openpolicyagent/opa:0.26.0-envoy
+          image: omiteam/opa:0.26.0-envoy
           volumeMounts:
             - readOnly: true
               mountPath: /policy
