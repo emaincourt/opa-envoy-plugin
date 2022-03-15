@@ -55,6 +55,7 @@ import (
 )
 
 const (
+	// See https://github.com/grpc/grpc-go/blob/master/server.go#L58 for more details
 	defaultServerMaxReceiveMessageSize = 1024 * 1024 * 4
 	defaultServerMaxSendMessageSize    = math.MaxInt32
 

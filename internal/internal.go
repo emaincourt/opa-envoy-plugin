@@ -7,6 +7,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"math"
 	"net"
 	"net/url"
 	"os"
@@ -46,6 +47,8 @@ const defaultAddr = ":9191"
 const defaultPath = "envoy/authz/allow"
 const defaultDryRun = false
 const defaultEnableReflection = false
+const defaultGrpcServiceMaxRcvMessageSize = 4 * 1024 * 1024
+const defaultGrpcServiceMaxSendMessageSize = math.MaxInt32
 
 // PluginName is the name to register with the OPA plugin manager
 const PluginName = "envoy_ext_authz_grpc"
@@ -56,9 +59,11 @@ const PluginName = "envoy_ext_authz_grpc"
 func Validate(m *plugins.Manager, bs []byte) (*Config, error) {
 
 	cfg := Config{
-		Addr:             defaultAddr,
-		DryRun:           defaultDryRun,
-		EnableReflection: defaultEnableReflection,
+		Addr:                          defaultAddr,
+		DryRun:                        defaultDryRun,
+		EnableReflection:              defaultEnableReflection,
+		GRPCServiceMaxRcvMessageSize:  defaultGrpcServiceMaxRcvMessageSize,
+		GRPCServiceMaxSendMessageSize: defaultGrpcServiceMaxSendMessageSize,
 	}
 
 	if err := util.Unmarshal(bs, &cfg); err != nil {
@@ -104,9 +109,12 @@ func Validate(m *plugins.Manager, bs []byte) (*Config, error) {
 func New(m *plugins.Manager, cfg *Config) plugins.Plugin {
 
 	plugin := &envoyExtAuthzGrpcServer{
-		manager:                m,
-		cfg:                    *cfg,
-		server:                 grpc.NewServer(),
+		manager: m,
+		cfg:     *cfg,
+		server: grpc.NewServer(
+			grpc.MaxRecvMsgSize(cfg.GRPCServiceMaxRcvMessageSize),
+			grpc.MaxSendMsgSize(cfg.GRPCServiceMaxSendMessageSize),
+		),
 		preparedQueryDoOnce:    new(sync.Once),
 		interQueryBuiltinCache: iCache.NewInterQueryCache(m.InterQueryBuiltinCacheConfig()),
 	}
@@ -129,14 +137,16 @@ func New(m *plugins.Manager, cfg *Config) plugins.Plugin {
 
 // Config represents the plugin configuration.
 type Config struct {
-	Addr             string `json:"addr"`
-	Query            string `json:"query"` // Deprecated: Use Path instead
-	Path             string `json:"path"`
-	DryRun           bool   `json:"dry-run"`
-	EnableReflection bool   `json:"enable-reflection"`
-	parsedQuery      ast.Body
-	ProtoDescriptor  string `json:"proto-descriptor"`
-	protoSet         *protoregistry.Files
+	Addr                          string `json:"addr"`
+	Query                         string `json:"query"` // Deprecated: Use Path instead
+	Path                          string `json:"path"`
+	DryRun                        bool   `json:"dry-run"`
+	GRPCServiceMaxRcvMessageSize  int    `json:"grpc-max-rcv-message-size"`
+	GRPCServiceMaxSendMessageSize int    `json:"grpc-max-send-message-size"`
+	EnableReflection              bool   `json:"enable-reflection"`
+	parsedQuery                   ast.Body
+	ProtoDescriptor               string `json:"proto-descriptor"`
+	protoSet                      *protoregistry.Files
 }
 
 type envoyExtAuthzGrpcServer struct {
