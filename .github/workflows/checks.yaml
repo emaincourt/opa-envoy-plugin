@@ -3,10 +3,10 @@ name: Checks
 on:
   push:
     branches:
-      - main
+      - feat/trigger-ci
   pull_request:
     branches:
-      - main
+      - feat/trigger-ci
 
 jobs:
   go-build:
@@ -44,7 +44,6 @@ jobs:
 
   deploy:
     name: Push Latest Release
-    if: github.ref == 'refs/heads/main' # only true for pushes to `main`
     runs-on: ubuntu-18.04
     steps:
       - name: Check out code

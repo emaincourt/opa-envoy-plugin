@@ -22,7 +22,7 @@ DISABLE_CGO := CGO_ENABLED=0
 
 BIN := opa_envoy_$(GOOS)_$(GOARCH)
 
-REPOSITORY := openpolicyagent
+REPOSITORY := omiteam
 IMAGE := $(REPOSITORY)/opa
 
 GO_TAGS := -tags=
